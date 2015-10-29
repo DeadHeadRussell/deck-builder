@@ -1,13 +1,10 @@
-import 'babel/register';
-
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import CardsList from './components/cardsList';
-import Board from './components/board';
-import Pack from './models/pack';
+import CardsList from '../components/cardsList';
+import Board from '../components/board';
+import Pack from '../models/pack';
 
-class Draft extends React.Component {
+export default class Draft extends React.Component {
   constructor() {
     super();
     this.updateNumDrafters = this.updateNumDrafters.bind(this);
@@ -128,6 +125,4 @@ class Draft extends React.Component {
     );
   }
 }
-
-ReactDOM.render(<Draft />, document.getElementById('root'));
 

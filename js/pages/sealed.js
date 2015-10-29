@@ -1,13 +1,10 @@
-import 'babel/register';
-
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import CardsList from './components/cardsList';
-import Board from './components/board';
-import Pack from './models/pack';
+import CardsList from '../components/cardsList';
+import Board from '../components/board';
+import Pack from '../models/pack';
 
-class Sealed extends React.Component {
+export default class Sealed extends React.Component {
   constructor() {
     super();
     this.toSideboard = this.toSideboard.bind(this);
@@ -53,6 +50,4 @@ class Sealed extends React.Component {
     );
   }
 }
-
-ReactDOM.render(<Sealed />, document.getElementById('root'));
 
