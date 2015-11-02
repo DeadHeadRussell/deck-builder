@@ -206,3 +206,8 @@ a, button, input[type=submit] {
   height: 286px;
 }
 
+/* table */
+.table-player-status {
+  margin: 0 5px;
+}
+
