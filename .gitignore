@@ -1,7 +1,4 @@
 build
-public/images
-public/entry.js
-public/SWtG.zip
+data
 node_modules
-log
-
+.*.sw*
