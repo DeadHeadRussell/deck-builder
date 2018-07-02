@@ -1,4 +1,15 @@
 {
-  "presets": ["env", "react"]
+  "plugins": [
+    ["babel-plugin-root-import", {
+      "rootPathSuffix": "client"
+    }],
+    ["babel-plugin-auto-import", {
+      "declarations": [{
+        "default": "React",
+        "path": "react"
+      }]
+    }]
+  ],
+  "presets": ["env", "react", "stage-2"]
 }
 
