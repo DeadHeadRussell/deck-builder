@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "deploy": "gh-pages-deploy",
-    "clean-source": "rm -rf client shared package.json package-lock.json webpack.config.js",
+    "clean-source": "rm -rf client shared package.json package-lock.json webpack.config.js .babelrc",
     "start": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
