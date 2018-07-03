@@ -45,6 +45,13 @@ const SETS_ORDER = List([
   'The Fall of Argenport'
 ]);
 
+const TYPES_ORDER = List([
+  'Unit',
+  'Attachment',
+  'Spell',
+  'Power'
+]);
+
 const KEYWORDS = List([
   'Aegis',
   'Charge',
@@ -117,6 +124,18 @@ const FACTIONS = Map()
   .set(Set(['P', 'S']), 'Feln')
   .set(Set(['T', 'P']), 'Elysian');
 
+const TYPES = Map({
+  'Fast Spell': 'Spell',
+  'Power': 'Power',
+  'Cursed Relic': 'Attachment',
+  'Curse': 'Attachment',
+  'Unit': 'Unit',
+  'Weapon': 'Attachment',
+  'Relic Weapon': 'Attachment',
+  'Relic': 'Attachment',
+  'Spell': 'Spell'
+});
+
 const ETERNAL_GROUPS = [
   'Faction',
   'Cost - Power',
@@ -125,6 +144,7 @@ const ETERNAL_GROUPS = [
   'Health',
   'Rarity',
   'Type',
+  'Card Type',
   'Unit Type',
   'Keyword',
   'Set'
@@ -133,8 +153,8 @@ const ETERNAL_GROUPS = [
 const ETERNAL_DEFAULT_SORT_ORDER = OrderedMap({
   'Cost - Power': (a, b) => a - b,
   'Cost - Influence': (a, b) => a.replace(/{|}/g, '').length - b.replace(/{|}/g, '').length,
+  'Type': (a, b) => TYPES_ORDER.indexOf(a) - TYPES_ORDER.indexOf(b),
   'Faction': (a, b) => FACTIONS_ORDER.indexOf(a) - FACTIONS_ORDER.indexOf(b),
-  'Type': (a, b) => a.localeCompare(b),
   'Rarity': (a, b) => RARITIES_ORDER.indexOf(a) - RARITIES_ORDER.indexOf(b),
   'Attack': (a, b) => a - b,
   'Health': (a, b) => a - b,
@@ -155,7 +175,7 @@ const ETERNAL_DEFAULT_SORT_ORDER = OrderedMap({
 const ETERNAL_PACK_SORT_ORDER = OrderedMap({
   'Rarity': (a, b) => RARITIES_ORDER.indexOf(a) - RARITIES_ORDER.indexOf(b),
   'Faction': (a, b) => FACTIONS_ORDER.indexOf(a) - FACTIONS_ORDER.indexOf(b),
-  'Type': (a, b) => a.localeCompare(b),
+  'Type': (a, b) => TYPES_ORDER.indexOf(a) - TYPES_ORDER.indexOf(b),
   'Cost - Power': (a, b) => a - b,
   'Cost - Influence': (a, b) => a.replace(/{|}/g, '').length - b.replace(/{|}/g, '').length,
   'Attack': (a, b) => a - b,
@@ -176,7 +196,8 @@ const ETERNAL_CARDS = rawEternalCardData
       'Attack': card['Attack'],
       'Health': card['Health'],
       'Rarity': card['Rarity'],
-      'Type': card['Type'],
+      'Type': parseType(card['Type']),
+      'Card Type': card['Type'],
       'Unit Type': card['UnitType'] || [],
       'Keyword': parseKeywords(card['CardText'] || ''),
       'Card Text': card['CardText']
@@ -193,6 +214,10 @@ function parseSet(setNumber) {
 function parseFaction(influence) {
   const colours = Set(influence.replace(/{|}/g, '').split(''));
   return FACTIONS.get(colours, 'Multifaction');
+}
+
+function parseType(cardType) {
+  return TYPES.get(cardType);
 }
 
 function parseKeywords(cardText) {

@@ -15,7 +15,23 @@ export default withStyles(
   }
 
   componentWillReceiveProps(newProps) {
-    this.setState(this.createInitialState(newProps));
+    if (!newProps.cards.equals(this.props.cards)) {
+      this.setState(this.createInitialState(newProps));
+    }
+  }
+
+  createInitialState(props) {
+    const {cards, format} = props;
+    return {
+      text: cards
+        .groupBy(card => card.id)
+        .map(cards => this.formatCard(cards.size, cards.first()))
+        .join('\n')
+    };
+  }
+
+  getText() {
+    return this.state.text;
   }
 
   formatCard(count, card) {
@@ -25,7 +41,7 @@ export default withStyles(
   parseCard(cardText) {
     const {allCards} = this.props;
 
-    const regex = /^(\d+) ([^(]+) \(Set(\d+) #(\d+)\)$/;
+    const regex = /^(\d+) ([^(]+) \((Set(\d+) #(\d+))?\)$/;
     const matches = cardText.match(regex);
     if (matches) {
       const count = parseInt(matches[1], 10);
@@ -40,22 +56,13 @@ export default withStyles(
     return null;
   }
 
-  createInitialState(props) {
-    const {cards, format} = props;
-    return {
-      text: cards
-        .groupBy(card => card.id)
-        .map(cards => this.formatCard(cards.size, cards.first()))
-        .join('\n')
-    };
-  }
-
   onChange = event => {
     const {onChange} = this.props;
     const text = event.target.value;
     this.setState({text});
 
     const cards = List(text.split('\n'))
+      .filter(cardText => cardText)
       .map(cardText => this.parseCard(cardText));
     const errors = cards.filter(card => !card);
     if (errors.isEmpty()) {
@@ -77,6 +84,9 @@ export default withStyles(
         readOnly={!!onChange}
         onChange={this.onChange}
         onBlur={this.onBlur}
+        inputProps={{
+          ref: textInput => this.textInput = textInput
+        }}
       />
     );
   }
