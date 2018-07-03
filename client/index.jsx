@@ -1,7 +1,7 @@
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import ReactDOM from 'react-dom';
-import {BrowserRouter} from 'react-router-dom';
+import {HashRouter} from 'react-router-dom';
 
 import Drafter from '~/pages/drafter';
 import muiTheme from '~/styles/theme';
@@ -16,11 +16,11 @@ main.id = 'main';
 document.body.appendChild(main);
 
 ReactDOM.render((
-  <BrowserRouter>
+  <HashRouter>
     <MuiThemeProvider theme={muiTheme}>
       <CssBaseline />
       <Drafter />
     </MuiThemeProvider>
-  </BrowserRouter>
+  </HashRouter>
 ), document.querySelector('#main'));
 
