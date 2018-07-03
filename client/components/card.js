@@ -24,8 +24,8 @@ export default withStyles(
       height: 412.5,
       cursor: 'pointer',
 
-      '&.rows:not(:first-child)': {
-        marginLeft: -150
+      '&.rows': {
+        marginRight: -150
       },
       '&.columns:not(:first-child)': {
         marginTop: -330
