@@ -1,7 +1,9 @@
 import {List, Map, OrderedMap, Set} from 'immutable';
 
-import rawEternalCardData from '../eternal-cards.json';
 import Card from './card';
+
+const rawEternalCardData = import('../eternal-cards.json')
+  .then(module => module.default);
 
 const FACTIONS_ORDER = List([
   'Fire',
@@ -129,9 +131,9 @@ const ETERNAL_GROUPS = [
 ];
 
 const ETERNAL_DEFAULT_SORT_ORDER = OrderedMap({
-  'Faction': (a, b) => FACTIONS_ORDER.indexOf(a) - FACTIONS_ORDER.indexOf(b),
   'Cost - Power': (a, b) => a - b,
   'Cost - Influence': (a, b) => a.replace(/{|}/g, '').length - b.replace(/{|}/g, '').length,
+  'Faction': (a, b) => FACTIONS_ORDER.indexOf(a) - FACTIONS_ORDER.indexOf(b),
   'Type': (a, b) => a.localeCompare(b),
   'Rarity': (a, b) => RARITIES_ORDER.indexOf(a) - RARITIES_ORDER.indexOf(b),
   'Attack': (a, b) => a - b,
@@ -162,21 +164,25 @@ const ETERNAL_PACK_SORT_ORDER = OrderedMap({
   'Set': (a, b) => SETS_ORDER.indexOf(a) - SETS_ORDER.indexOf(b)
 });
 
-const ETERNAL_CARDS = List(rawEternalCardData)
-  .map((card, index) => new Card(index, card['Name'], card['ImageUrl'], {
-    'Set': parseSet(card['SetNumber']),
-    'Cost - Power': card['Cost'],
-    'Cost - Influence': card['Influence'],
-    'Faction': parseFaction(card['Influence']),
-    'Attack': card['Attack'],
-    'Health': card['Health'],
-    'Rarity': card['Rarity'],
-    'Type': card['Type'],
-    'Unit Type': card['UnitType'] || [],
-    'Keyword': parseKeywords(card['CardText'] || ''),
-    'Card Text': card['CardText']
-  }, ETERNAL_DEFAULT_SORT_ORDER))
-  .sort((a, b) => a.compare(b));
+const ETERNAL_CARDS = rawEternalCardData
+  .then(rawEternalCardData => List(rawEternalCardData)
+    .map((card, index) => new Card(index, card['Name'], card['ImageUrl'], {
+      'Set': parseSet(card['SetNumber']),
+      'Set Number': card['SetNumber'],
+      'Eternal ID': card['EternalID'],
+      'Cost - Power': card['Cost'],
+      'Cost - Influence': card['Influence'],
+      'Faction': parseFaction(card['Influence']),
+      'Attack': card['Attack'],
+      'Health': card['Health'],
+      'Rarity': card['Rarity'],
+      'Type': card['Type'],
+      'Unit Type': card['UnitType'] || [],
+      'Keyword': parseKeywords(card['CardText'] || ''),
+      'Card Text': card['CardText']
+    }, ETERNAL_DEFAULT_SORT_ORDER))
+    .sort((a, b) => a.compare(b))
+  );
 
 export {ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, ETERNAL_PACK_SORT_ORDER, ETERNAL_CARDS};
 

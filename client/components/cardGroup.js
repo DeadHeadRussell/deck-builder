@@ -46,22 +46,22 @@ export default withStyles(
 )(class CardGroup extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {display: props.defaultDisplay || false};
+    this.state = {visible: props.defaultVisibility || false};
   }
 
-  toggleDisplay = () => {
-    const {display} = this.state;
-    this.setState({display: !display});
+  toggleVisible = () => {
+    const {visible} = this.state;
+    this.setState({visible: !visible});
   }
 
   render() {
-    const {name, cards, view, compact, cardActions, onCardClick, classes} = this.props;
-    const {display} = this.state;
+    const {name, cards, view, display, cardActions, onCardClick, classes} = this.props;
+    const {visible} = this.state;
 
     const cardElems = cards
       .groupBy(card => card.id)
       .map((cards, id) => (
-        <Card key={id} card={cards.first()} count={cards.size} view={view} compact={compact} cardActions={cardActions} onClick={onCardClick} />
+        <Card key={id} card={cards.first()} count={cards.size} view={view} display={display} cardActions={cardActions} onClick={onCardClick} />
       ))
       .toList()
       .flatten();
@@ -72,22 +72,20 @@ export default withStyles(
 
     return (
       <MaterialCard
-        className={classNames(classes[`${view}Root`], {compact})}
+        className={classNames(classes[`${view}Root`], display)}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} onClick={this.toggleDisplay}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} onClick={this.toggleVisible}>
           <Typography variant='title' component='h2'>
             {parsedName} - ({cards.size})
           </Typography>
         </ExpansionPanelSummary>
-        {display
+        {visible
           ? (
             <ExpansionPanelDetails
               className={classNames(
                 classes.content,
                 classes[view],
-                {
-                  [classes.compact]: compact
-                }
+                classes[display]
               )}
             >
               {cardElems}

@@ -43,9 +43,9 @@ export default withStyles(
   }
 
   render() {
-    const {card, count, view, compact, cardActions, classes} = this.props;
+    const {card, count, view, display, cardActions, classes} = this.props;
 
-    return compact
+    return display == 'compact'
       ? List().set(count - 1, 0)
         .map(() => (
           <img
@@ -61,12 +61,15 @@ export default withStyles(
             <Typography gutterBottom variant='headline' component='h3'>
               {card.name} {count > 1 ? `x${count}` : null}
             </Typography>
-            <CardMedia className={classes.image} image={card.imageUrl} title={card.name} />
+            {display == 'noImages'
+              ? null
+              : <CardMedia className={classes.image} image={card.imageUrl} title={card.name} />
+            }
           </CardContent>
           <CardActions>
             {cardActions
               .map(cardAction => (
-                <Button size='small' color='primary' onClick={this.onClick(cardAction)}>{cardAction}</Button>
+                <Button key={cardAction} size='small' color='primary' onClick={this.onClick(cardAction)}>{cardAction}</Button>
               ))
             }
           </CardActions>

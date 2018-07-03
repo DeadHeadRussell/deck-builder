@@ -54,7 +54,7 @@ export default withStyles(
       search: '',
       grouping: props.defaultGrouping || props.groupings[0],
       view: props.defaultView || 'rows',
-      compact: false
+      display: props.defaultDisplay || ''
     };
   }
 
@@ -106,12 +106,12 @@ export default withStyles(
   }
 
   updateCompact = event => {
-    this.setState({compact: !!event.target.checked});
+    this.setState({display: event.target.value});
   }
 
   render() {
     const {classes, name, cards, groupings, cardActions, onCardClick} = this.props;
-    const {search, grouping, view, compact} = this.state;
+    const {search, grouping, view, display} = this.state;
 
     const cardGroups = this.getCardGroups();
     const cardGroupElems = cardGroups
@@ -124,7 +124,7 @@ export default withStyles(
           }
           cards={cards}
           view={view}
-          compact={compact}
+          display={display}
           defaultDisplay={cardGroups.size == 1
             ? true
             : false
@@ -185,17 +185,21 @@ export default withStyles(
           </Select>
         </FormControl>
 
-        <FormControlLabel
-          className={classes.formControl}
-          control={
-            <Checkbox
-              checked={compact}
-              onChange={this.updateCompact}
-              value='compact'
-            />
-          }
-          label='Compact'
-        />
+        <FormControl className={classes.formControl}>
+          <FormLabel htmlFor='display'>Display</FormLabel>
+          <Select
+            value={display}
+            onChange={this.updateCompact}
+            inputProps={{
+              name: 'display',
+              id: 'display'
+            }}
+          >
+            <MenuItem value=''>None</MenuItem>
+            <MenuItem value='noImages'>No Images</MenuItem>
+            <MenuItem value='compact'>Compact</MenuItem>
+          </Select>
+        </FormControl>
 
         {cardGroupElems.isEmpty()
           ? <Typography variant='body1' className={classes.content}>This board is empty</Typography>

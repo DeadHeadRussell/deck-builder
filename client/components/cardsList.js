@@ -1,45 +1,84 @@
-export default class CardsList extends React.Component {
-  getCounts(cards) {
-    return cards.reduce((cards, card) => {
-      cards[card.name] = cards[card.name] || 0;
-      cards[card.name]++;
-      return cards;
-    }, {});
+import {withStyles} from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import {List} from 'immutable';
+
+export default withStyles(
+  {
+    textField: {
+      width: 300
+    }
+  }
+)(class CardsList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = this.createInitialState(props);
   }
 
-  getCardsList() {
-    if (this.props.counts) {
-      let cardCounts = this.getCounts(this.props.cards);
-      let sideCounts = this.getCounts(this.props.sideboard);
+  componentWillReceiveProps(newProps) {
+    this.setState(this.createInitialState(newProps));
+  }
 
-      let cards = Object.keys(cardCounts).map(name => `${cardCounts[name]} ${name}`);
-      let side = Object.keys(sideCounts).map(name => `SB: ${sideCounts[name]} ${name}`);
+  formatCard(count, card) {
+    return `${count} ${card.name} (Set${card.getValue('Set Number')} #${card.getValue('Eternal ID')})`;
+  }
 
-      return cards.concat(side);
-    } else {
-      let cards = this.props.cards.map(card => card.name);
-      let sideCards = this.props.sideCards.map(card => card.name);
-      return cards.concat(sideCards);
+  parseCard(cardText) {
+    const {allCards} = this.props;
+
+    const regex = /^(\d+) ([^(]+) \(Set(\d+) #(\d+)\)$/;
+    const matches = cardText.match(regex);
+    if (matches) {
+      const count = parseInt(matches[1], 10);
+      const name = matches[2];
+      const card = allCards.find(card => card.name == name);
+      if (card) {
+        return List()
+          .set(count - 1, 0)
+          .map(() => card);
+      }
+    }
+    return null;
+  }
+
+  createInitialState(props) {
+    const {cards, format} = props;
+    return {
+      text: cards
+        .groupBy(card => card.id)
+        .map(cards => this.formatCard(cards.size, cards.first()))
+        .join('\n')
+    };
+  }
+
+  onChange = event => {
+    const {onChange} = this.props;
+    const text = event.target.value;
+    this.setState({text});
+
+    const cards = List(text.split('\n'))
+      .map(cardText => this.parseCard(cardText));
+    const errors = cards.filter(card => !card);
+    if (errors.isEmpty()) {
+      onChange(cards.flatten());
     }
   }
 
-  onChange = (event) => {
-    this.props.onChange(event.target.value.split('\n'));
-  }
-
   render() {
-    const cardsText = this.getCardsList().join('\n');
+    const {onChange, classes} = this.props;
+    const {text} = this.state;
     return (
       <TextField
-        floatingLabelText='Cards List'
-        multiLine={true}
-        value={cardsText}
-        readOnly={!!this.props.onChange}
+        label='Cards List'
+        className={classes.textField}
+        multiline={true}
+        rows={10}
+        rowsMax={60}
+        value={text}
+        readOnly={!!onChange}
         onChange={this.onChange}
+        onBlur={this.onBlur}
       />
     );
   }
-}
-
-CardsList.defaultProps = {counts: true, sideCards: []};
+});
 
