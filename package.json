@@ -5,7 +5,7 @@
   "main": "build/server.js",
   "scripts": {
     "build": "webpack",
-    "deploy": "git checkout gh-pages && rm -rf build/ && git rebase master && npm run build && mv build/* . && git commit -a -m 'Update' && git push origin gh-pages -f",
+    "deploy": "git checkout gh-pages && rm -rf build/ && git rebase master && npm run build && mv build/* . && git commit -a -m 'Update' && git push origin gh-pages -f && git checkout master",
     "start": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
