@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import classNames from 'classnames';
+import {List, Map} from 'immutable';
 
 import CardGroup from '~/components/cardGroup';
 
@@ -55,12 +56,35 @@ export default withStyles(
   }
 
   getCardGroups() {
-    const {cards} = this.props;
+    const {cards, sortOrder} = this.props;
     const {grouping} = this.state;
 
     return cards
       .groupBy(card => card.getValue(grouping))
-      .map((cards, grouping) => cards.sort((a, b) => a.compare(b, grouping)));
+      .reduce(
+        (groups, cards, column) => {
+          if (Array.isArray(column)) {
+            if (column.length > 0) {
+              return column
+                .reduce(
+                  (groups, column) => groups
+                    .update(column, List(), c => c.concat(cards)),
+                  groups
+                );
+            } else {
+              return groups.update('', List(), c => c.concat(cards));
+            }
+          } else {
+            return groups.update(column, List(), c => c.concat(cards));
+          }
+        },
+        Map()
+      )
+      .map(cards => cards.sort((a, b) => a.compare(b, grouping)))
+      .sortBy(
+        (_, groupName) => groupName,
+        (a, b) => sortOrder.get(grouping)(a, b)
+      );
   }
 
   updateGrouping = event => {
@@ -80,8 +104,8 @@ export default withStyles(
     const {grouping, view, compact} = this.state;
 
     const cardGroupElems = this.getCardGroups()
-      .map((cards, grouping)  => (
-        <CardGroup key={grouping} name={grouping} cards={cards} view={view} compact={compact} cardActions={cardActions} onCardClick={onCardClick} />
+      .map((cards, groupName) => (
+        <CardGroup key={groupName} name={groupName} cards={cards} view={view} compact={compact} cardActions={cardActions} onCardClick={onCardClick} />
       ))
       .toList();
 
@@ -98,10 +122,12 @@ export default withStyles(
               id: 'grouping-sort'
             }}
           >
-            {groupings
-              .map(grouping => (
-                <MenuItem value={grouping}>{grouping}</MenuItem>
-              ))
+            {[(<MenuItem value='None'>None</MenuItem>)]
+              .concat(groupings
+                .map(grouping => (
+                  <MenuItem value={grouping}>{grouping}</MenuItem>
+                ))
+              )
             }
           </Select>
         </FormControl>

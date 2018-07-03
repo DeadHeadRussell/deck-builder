@@ -15,8 +15,9 @@ export default class Card {
   }
 
   compare(other, grouping) {
-    const sortOrder = this.defaultSortOrder
-      .remove(grouping);
+    const sortOrder = grouping
+      ? this.defaultSortOrder.remove(grouping)
+      : this.defaultSortOrder;
 
     return sortOrder
       .reduce(

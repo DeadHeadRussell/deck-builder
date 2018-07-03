@@ -60,7 +60,7 @@ export default withStyles(
       >
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant='title' component='h2'>
-            {name} - ({cards.size})
+            {name || '(None)'} - ({cards.size})
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>

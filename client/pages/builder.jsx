@@ -1,7 +1,7 @@
 import Typography from '@material-ui/core/Typography';
 import {List} from 'immutable';
 
-import {ETERNAL_CARDS, ETERNAL_GROUPS} from '~/../shared/models/eternalCards';
+import {ETERNAL_CARDS, ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER} from '~/../shared/models/eternalCards';
 
 import Board from '~/components/board';
 
@@ -44,8 +44,22 @@ export default class Builder extends React.Component {
     return (
       <div>
         <Typography variant='headline'>Deck Editor</Typography>
-        <Board name='Mainboard' cards={mainboard} groupings={ETERNAL_GROUPS} cardActions={['Remove Card']} onCardClick={this.handleCardAction} />
-        <Board name='All Cards' cards={ETERNAL_CARDS} groupings={ETERNAL_GROUPS} cardActions={['Add to Deck']} onCardClick={this.handleCardAction} />
+        <Board
+          name='Mainboard'
+          cards={mainboard}
+          groupings={ETERNAL_GROUPS}
+          sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+          cardActions={['Remove Card']}
+          onCardClick={this.handleCardAction}
+        />
+        <Board
+          name='All Cards'
+          cards={ETERNAL_CARDS}
+          groupings={ETERNAL_GROUPS}
+          sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+          cardActions={['Add to Deck']}
+          onCardClick={this.handleCardAction}
+        />
       </div>
     );
   }

@@ -43,6 +43,50 @@ const SETS_ORDER = List([
   'The Fall of Argenport'
 ]);
 
+const KEYWORDS = List([
+  'Aegis',
+  'Charge',
+  'Deadly',
+  'Double Damage',
+  'Endurance',
+  'Flying',
+  'Killer',
+  'Lifesteal',
+  'Overwhelm',
+  'Quickdraw',
+  'Reckless',
+  'Revenge',
+  'Unblockable',
+  'Warcry',
+  'Ambush',
+  'Destiny',
+  'Echo',
+  'Ally',
+  'Empower',
+  'Entomb',
+  'Fate',
+  'Infiltrate',
+  'Lifeforce',
+  'Mentor',
+  'Student',
+  'Spark',
+  'Summon',
+  'Transmute',
+  'Ultimate',
+  'Bond',
+  'Depleted',
+  'Invulnerable',
+  'Nightfall',
+  'Night',
+  'Scout',
+  'Silence',
+  'Steal',
+  'Stun',
+  'Stunned',
+  'Warp',
+  'Kill'
+]);
+
 const SETS = Map()
   .set(0, 'Set 0')
   .set(1, 'The Eternal Throne')
@@ -71,15 +115,6 @@ const FACTIONS = Map()
   .set(Set(['P', 'S']), 'Feln')
   .set(Set(['T', 'P']), 'Elysian');
 
-function parseSet(setNumber) {
-  return SETS.get(setNumber);
-}
-
-function parseFaction(influence) {
-  const colours = Set(influence.replace(/{|}/g, '').split(''));
-  return FACTIONS.get(colours, 'MultiFaction');
-}
-
 const ETERNAL_GROUPS = [
   'Faction',
   'Cost - Power',
@@ -101,8 +136,16 @@ const ETERNAL_DEFAULT_SORT_ORDER = OrderedMap({
   'Rarity': (a, b) => RARITIES_ORDER.indexOf(a) - RARITIES_ORDER.indexOf(b),
   'Attack': (a, b) => a - b,
   'Health': (a, b) => a - b,
-  'Unit Type': (a, b) => -1,
-  'Keyword': (a, b) => -1,
+  'Unit Type': (a, b) => {
+    a = (Array.isArray(a) ? a[0] : a) || '';
+    b = (Array.isArray(b) ? b[0] : b) || '';
+    return a.localeCompare(b);
+  },
+  'Keyword': (a, b) => {
+    a = (Array.isArray(a) ? a[0] : a) || '';
+    b = (Array.isArray(b) ? b[0] : b) || '';
+    return a.localeCompare(b);
+  },
   'Name': (a, b) => a.localeCompare(b),
   'Set': (a, b) => SETS_ORDER.indexOf(a) - SETS_ORDER.indexOf(b)
 });
@@ -115,8 +158,6 @@ const ETERNAL_PACK_SORT_ORDER = OrderedMap({
   'Cost - Influence': (a, b) => a.replace(/{|}/g, '').length - b.replace(/{|}/g, '').length,
   'Attack': (a, b) => a - b,
   'Health': (a, b) => a - b,
-  'Unit Type': (a, b) => -1,
-  'Keyword': (a, b) => -1,
   'Name': (a, b) => a.localeCompare(b),
   'Set': (a, b) => SETS_ORDER.indexOf(a) - SETS_ORDER.indexOf(b)
 });
@@ -131,9 +172,25 @@ const ETERNAL_CARDS = List(rawEternalCardData)
     'Health': card['Health'],
     'Rarity': card['Rarity'],
     'Type': card['Type'],
-    'Unit Type': (card['UnitType'] || []).join(' '),
-    'Keyword': 'TODO'
-  }, ETERNAL_DEFAULT_SORT_ORDER));
+    'Unit Type': card['UnitType'] || [],
+    'Keyword': parseKeywords(card['CardText'] || '')
+  }, ETERNAL_DEFAULT_SORT_ORDER))
+  .sort((a, b) => a.compare(b));
 
 export {ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, ETERNAL_PACK_SORT_ORDER, ETERNAL_CARDS};
+
+function parseSet(setNumber) {
+  return SETS.get(setNumber);
+}
+
+function parseFaction(influence) {
+  const colours = Set(influence.replace(/{|}/g, '').split(''));
+  return FACTIONS.get(colours, 'Multifaction');
+}
+
+function parseKeywords(cardText) {
+  return KEYWORDS
+    .filter(keyword => new RegExp(`\\b${keyword}\\b`, 'i').test(cardText))
+    .toArray();
+}
 
