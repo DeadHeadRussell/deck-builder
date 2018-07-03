@@ -5,6 +5,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import classNames from 'classnames';
 import {List, Map} from 'immutable';
@@ -24,7 +25,8 @@ export default withStyles(
     },
     formControl: {
       minWidth: 120,
-      margin: theme.spacing.unit
+      marginLeft: theme.spacing.unit,
+      marginRight: theme.spacing.unit
     },
     content: {
       flex: '0 0 100%',
@@ -49,6 +51,7 @@ export default withStyles(
 
   createInitialState(props) {
     return {
+      search: '',
       grouping: props.defaultGrouping || props.groupings[0],
       view: props.defaultView || 'rows',
       compact: false
@@ -57,9 +60,12 @@ export default withStyles(
 
   getCardGroups() {
     const {cards, sortOrder} = this.props;
-    const {grouping} = this.state;
+    const {grouping, search} = this.state;
+
+    const searchRegex = new RegExp(search, 'i');
 
     return cards
+      .filter(card => card.search(search))
       .groupBy(card => card.getValue(grouping))
       .reduce(
         (groups, cards, column) => {
@@ -87,6 +93,10 @@ export default withStyles(
       );
   }
 
+  updateSearch = event => {
+    this.setState({search: event.target.value});
+  }
+
   updateGrouping = event => {
     this.setState({grouping: event.target.value});
   }
@@ -101,17 +111,45 @@ export default withStyles(
 
   render() {
     const {classes, name, cards, groupings, cardActions, onCardClick} = this.props;
-    const {grouping, view, compact} = this.state;
+    const {search, grouping, view, compact} = this.state;
 
-    const cardGroupElems = this.getCardGroups()
+    const cardGroups = this.getCardGroups();
+    const cardGroupElems = cardGroups
       .map((cards, groupName) => (
-        <CardGroup key={groupName} name={groupName} cards={cards} view={view} compact={compact} cardActions={cardActions} onCardClick={onCardClick} />
+        <CardGroup
+          key={groupName}
+          name={cardGroups.size == 1
+            ? 'All'
+            : groupName
+          }
+          cards={cards}
+          view={view}
+          compact={compact}
+          defaultDisplay={cardGroups.size == 1
+            ? true
+            : false
+          }
+          cardActions={cardActions}
+          onCardClick={onCardClick}
+        />
       ))
       .toList();
 
     return (
       <div className={classes.root}>
-        <Typography variant='headline' className={classes.header}>{name} - ({cards.size})</Typography>
+        <Typography variant='headline' className={classes.header}>
+          {name} - ({cards.size})
+        </Typography>
+
+        <TextField
+          id='search'
+          label='Search'
+          className={classes.formControl}
+          value={search}
+          onChange={this.updateSearch}
+          margin='normal'
+        />
+
         <FormControl className={classes.formControl}>
           <FormLabel htmlFor='grouping-sort'>Grouping / Sort</FormLabel>
           <Select

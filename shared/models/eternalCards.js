@@ -173,7 +173,8 @@ const ETERNAL_CARDS = List(rawEternalCardData)
     'Rarity': card['Rarity'],
     'Type': card['Type'],
     'Unit Type': card['UnitType'] || [],
-    'Keyword': parseKeywords(card['CardText'] || '')
+    'Keyword': parseKeywords(card['CardText'] || ''),
+    'Card Text': card['CardText']
   }, ETERNAL_DEFAULT_SORT_ORDER))
   .sort((a, b) => a.compare(b));
 

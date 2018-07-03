@@ -46,7 +46,7 @@ export default withStyles(
 )(class CardGroup extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {display: false};
+    this.state = {display: props.defaultDisplay || false};
   }
 
   toggleDisplay = () => {

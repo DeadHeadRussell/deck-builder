@@ -4,6 +4,7 @@ export default class Card {
     this.name = name;
     this.imageUrl = imageUrl;
     this.data = data;
+    this.dataString = Object.values(data).join(' ');
     this.defaultSortOrder = defaultSortOrder;
   }
 
@@ -29,6 +30,11 @@ export default class Card {
         },
         0
       );
+  }
+
+  search(query) {
+    const regex = new RegExp(query, 'i');
+    return regex.test(this.name) || regex.test(this.dataString);
   }
 }
 
