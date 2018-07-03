@@ -1,4 +1,4 @@
-build
+dist
 data
 node_modules
 .*.sw*

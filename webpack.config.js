@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: path.resolve(__dirname, 'client', 'index.jsx'),
   output: {
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
 
@@ -33,7 +33,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       hash: true,
       title: 'Deck Creator',
-      filename: path.resolve(__dirname, 'build', 'index.html')
+      filename: path.resolve(__dirname, 'dist', 'index.html')
     })
   ]
 };
