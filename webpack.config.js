@@ -32,6 +32,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       hash: true,
+      title: 'Deck Creator',
       filename: path.resolve(__dirname, 'build', 'index.html')
     })
   ]
