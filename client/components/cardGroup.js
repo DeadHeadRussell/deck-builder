@@ -51,6 +51,10 @@ export default withStyles(
       .toList()
       .flatten();
 
+    const parsedName = typeof name == 'undefined' || name.length == 0
+      ? '(None)'
+      : name;
+
     return (
       <ExpansionPanel
         classes={{
@@ -60,7 +64,7 @@ export default withStyles(
       >
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant='title' component='h2'>
-            {name || '(None)'} - ({cards.size})
+            {parsedName} - ({cards.size})
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
