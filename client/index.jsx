@@ -3,7 +3,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import ReactDOM from 'react-dom';
 import {HashRouter} from 'react-router-dom';
 
-import Drafter from '~/pages/drafter';
+import Root from '~/pages/root';
 import muiTheme from '~/styles/theme';
 
 const roboto = document.createElement('link');
@@ -19,7 +19,7 @@ ReactDOM.render((
   <HashRouter>
     <MuiThemeProvider theme={muiTheme}>
       <CssBaseline />
-      <Drafter />
+      <Root />
     </MuiThemeProvider>
   </HashRouter>
 ), document.querySelector('#main'));

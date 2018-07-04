@@ -46,7 +46,7 @@ export default withStyles(
     }
   }),
   {withTheme: true}
-)(class Drafter extends React.Component {
+)(class Root extends React.Component {
   constructor(props) {
     super(props);
     this.state = {isDrawerOpen: false};
@@ -73,7 +73,7 @@ export default withStyles(
               <MenuIcon />
             </IconButton>
             <Typography variant='title' color='inherit'>
-              Drafter
+              Deck Builder
             </Typography>
           </Toolbar>
         </AppBar>
