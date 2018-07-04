@@ -53,6 +53,7 @@ export default withStyles(
           .map(() => card);
       }
     }
+    console.error(`Could not parse card text "${cardText}"`);
     return null;
   }
 

@@ -1,11 +1,16 @@
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Grid from '@material-ui/core/Grid';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import copy from 'copy-to-clipboard';
-import {List} from 'immutable';
+import debounce from 'debounce';
+import {List, Map} from 'immutable';
 
 import {ETERNAL_CARDS, ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER} from '~/../shared/models/eternalCards';
+import {Decks} from '~/libs/persistence';
 
 import Board from '~/components/board';
 import CardsList from '~/components/cardsList';
@@ -17,14 +22,28 @@ export default class Builder extends React.Component {
   }
 
   componentDidMount() {
-    ETERNAL_CARDS.then(cards => this.setState({allCards: cards}));
+    ETERNAL_CARDS.then(cards => {
+      const {deckName} = this.state;
+      const deck = Decks.getDeck(deckName);
+      const mainboard = List(deck && deck.cards)
+        .map(cardName => cards.find(card => card.name == cardName))
+
+      this.setState({
+        loading: false,
+        deckName,
+        allCards: cards,
+        mainboard
+      });
+    });
   }
 
   createInitialState(props) {
+    const deckName = props.match.params.name || '';
+
     return {
       exportAnchor: null,
-      allCards: List(),
-      mainboard: List()
+      loading: true,
+      deckName
     };
   }
 
@@ -48,10 +67,38 @@ export default class Builder extends React.Component {
     this.setState({exportAnchor: null});
   }
 
+  saveDeck = debounce(() => {
+    const {deckName, mainboard} = this.state;
+    Decks.setDeck(deckName, {
+      name: deckName,
+      cards: mainboard
+        .map(card => card.name)
+        .toArray()
+    });
+  }, 500);
+
+  onDeckNameChange = event => {
+    this.setState({deckName: event.target.value});
+  }
+
+  updateDeckName = event => {
+    const {deckName} = this.state;
+
+    const newDeckName = event.target.value;
+    const deckCollision = Decks.getDeck(newDeckName);
+    if (deckCollision) {
+      // error 
+      console.error(`Deck "${newDeckName}" already exists`, deckCollision);
+    } else {
+      Decks.removeDeck(deckName);
+      this.setState({deckName: newDeckName}, this.saveDeck);
+    }
+  }
+
   updateCards = cards => {
     this.setState({mainboard: cards
       .sort((a, b) => a.compare(b))
-    });
+    }, this.saveDeck);
   }
 
   handleCardAction = (action, card) => {
@@ -67,65 +114,91 @@ export default class Builder extends React.Component {
     this.setState({
       mainboard: mainboard.push(card)
         .sort((a, b) => a.compare(b))
-    });
+    }, this.saveDeck);
   }
 
   removeCard = card => {
     const {mainboard} = this.state;
     this.setState({
       mainboard: mainboard.remove(mainboard.findIndex(c => c == card))
-    });
+    }, this.saveDeck);
   }
 
   render() {
-    const {exportAnchor, allCards, mainboard} = this.state;
+    const {exportAnchor, deckName, loading, allCards, mainboard} = this.state;
 
-    return (
-      <div>
-        <Typography variant='headline'>Deck Editor</Typography>
+    return loading
+      ? (
+        <React.Fragment>
+          <Typography variant='subtitle'>{deckName}</Typography>
+          <CircularProgress />
+        </React.Fragment>
+      )
+      : (
+        <Grid container spacing={24}>
+          <Grid item xs={12}>
+            <Typography variant='headline'>Deck Editor</Typography>
+          </Grid>
 
-        <CardsList
-          innerRef={cardsList => this.cardsList = cardsList}
-          allCards={allCards}
-          cards={mainboard}
-          onChange={this.updateCards}
-        />
-        <Button
-          aria-owns={exportAnchor ? 'export-menu' : null}
-          aria-haspopup='true'
-          onClick={this.openExportMenu}
-        >
-          Export...
-        </Button>
-        <Menu
-          id='export-menu'
-          anchorEl={exportAnchor}
-          open={!!exportAnchor}
-          onClose={this.closeExportMenu}
-        >
-          <MenuItem onClick={this.doExport('clipboard')}>Clipboard</MenuItem>
-          <MenuItem onClick={this.doExport('eternalDeckAnalyser')}>Eternal Deck Analyser</MenuItem>
-        </Menu>
+          <Grid item>
+            <TextField
+              label='Deck Name'
+              value={deckName}
+              onChange={this.onDeckNameChange}
+              onBlur={this.updateDeckName}
+            />
+          </Grid>
+          <Grid>
+            <Button
+              aria-owns={exportAnchor ? 'export-menu' : null}
+              aria-haspopup='true'
+              onClick={this.openExportMenu}
+            >
+              Export...
+            </Button>
+            <Menu
+              id='export-menu'
+              anchorEl={exportAnchor}
+              open={!!exportAnchor}
+              onClose={this.closeExportMenu}
+            >
+              <MenuItem onClick={this.doExport('clipboard')}>Clipboard</MenuItem>
+              <MenuItem onClick={this.doExport('eternalDeckAnalyser')}>Eternal Deck Analyser</MenuItem>
+            </Menu>
+          </Grid>
 
-        <Board
-          name='Mainboard'
-          cards={mainboard}
-          defaultGrouping='Type'
-          groupings={ETERNAL_GROUPS}
-          sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-          cardActions={['Remove Card', 'Add Card']}
-          onCardClick={this.handleCardAction}
-        />
-        <Board
-          name='All Cards'
-          cards={allCards}
-          groupings={ETERNAL_GROUPS}
-          sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-          cardActions={['Add to Deck']}
-          onCardClick={this.handleCardAction}
-        />
-      </div>
-    );
+          <Grid item xs={12}>
+            <CardsList
+              innerRef={cardsList => this.cardsList = cardsList}
+              allCards={allCards}
+              cards={mainboard}
+              onChange={this.updateCards}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Board
+              name='Mainboard'
+              cards={mainboard}
+              defaultGrouping='Type'
+              groupings={ETERNAL_GROUPS}
+              sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+              cardActions={['Remove Card', 'Add Card']}
+              onCardClick={this.handleCardAction}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Board
+              name='All Cards'
+              cards={allCards}
+              groupings={ETERNAL_GROUPS}
+              sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+              cardActions={['Add to Deck']}
+              onCardClick={this.handleCardAction}
+            />
+          </Grid>
+        </Grid>
+      );
   }
 }
 

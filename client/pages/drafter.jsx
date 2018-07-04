@@ -96,7 +96,8 @@ export default withStyles(
         </Hidden>
         <main className={classes.content}>
           <Route path='/' exact={true} component={Dashboard} />
-          <Route path='/builder' component={Builder} />
+          <Route path='/builder/:name' component={Builder} />
+          <Route path='/builder' exact={true} component={Builder} />
         </main>
       </div>
     );
