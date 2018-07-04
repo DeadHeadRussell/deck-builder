@@ -1,5 +1,6 @@
 const path = require('path');
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -34,7 +35,12 @@ module.exports = {
       hash: true,
       title: 'Deck Creator',
       filename: path.resolve(__dirname, 'dist', 'index.html')
-    })
+    }),
+
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, 'static'),
+      to: 'static'
+    }])
   ]
 };
 

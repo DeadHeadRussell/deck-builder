@@ -187,7 +187,7 @@ const ETERNAL_PACK_SORT_ORDER = OrderedMap({
 
 const ETERNAL_CARDS = rawEternalCardData
   .then(rawEternalCardData => List(rawEternalCardData)
-    .map((card, index) => new Card(index, card['Name'], card['ImageUrl'], {
+    .map((card, index) => new Card(index, card['Name'], parseUrl(card['Name']), {
       'Set': parseSet(card['SetNumber']),
       'Set Number': card['SetNumber'],
       'Eternal ID': card['EternalID'],
@@ -207,6 +207,10 @@ const ETERNAL_CARDS = rawEternalCardData
   );
 
 export {ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, ETERNAL_PACK_SORT_ORDER, ETERNAL_CARDS};
+
+function parseUrl(name) {
+  return `/static/eternal/${name}.png`;
+}
 
 function parseSet(setNumber) {
   return SETS.get(setNumber);
