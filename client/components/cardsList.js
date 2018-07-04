@@ -75,7 +75,7 @@ export default withStyles(
   }
 
   render() {
-    const {label, onChange, classes} = this.props;
+    const {label, helperText, onChange, classes} = this.props;
     const {text, textError} = this.state;
     return (
       <TextField
@@ -83,7 +83,7 @@ export default withStyles(
         className={classes.textField}
         multiline={true}
         error={!!textError}
-        helperText={textError}
+        helperText={textError || helperText}
         rows={10}
         rowsMax={20}
         value={text}

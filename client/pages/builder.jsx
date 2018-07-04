@@ -1,5 +1,6 @@
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -194,6 +195,7 @@ export default class Builder extends React.Component {
           <Grid item>
             <CardsList
               label='Card Pool'
+              helperText='Use this if you are working with a limited set of cards (eg, a draft or sealed card pool).'
               allCards={allCards}
               cards={cardsPool}
               onChange={this.updateCardsPool}
@@ -207,6 +209,10 @@ export default class Builder extends React.Component {
               cards={mainboard}
               onChange={this.updateMainboardCards}
             />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
           </Grid>
 
           <Grid item xs={12}>
