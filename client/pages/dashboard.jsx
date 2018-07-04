@@ -10,22 +10,28 @@ import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import {Link} from 'react-router-dom';
 
-import {Decks} from '~/libs/persistence';
+import {withStore} from '~/libs/store';
+import {compose} from '~/libs/utils';
 
-export default withStyles(
-  theme => ({
-    card: {
-      width: 300,
-      margin: theme.spacing.unit
-    },
-
-    fab: {
-      position: 'absolute',
-      bottom: theme.spacing.unit * 2,
-      right: theme.spacing.unit * 2
-    }
+export default compose(
+  withStore({
+    bins: ['decks']
   }),
-  {useTheme: true}
+  withStyles(
+    theme => ({
+      card: {
+        width: 300,
+        margin: theme.spacing.unit
+      },
+
+      fab: {
+        position: 'absolute',
+        bottom: theme.spacing.unit * 2,
+        right: theme.spacing.unit * 2
+      }
+    }),
+    {useTheme: true}
+  )
 )(class Dashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -34,7 +40,8 @@ export default withStyles(
 
   removeDeck = deck => {
     return () => {
-      Decks.removeDeck(deck.name);
+      const {decks} = this.props;
+      decks.removeDeck(deck);
       this.setState({isUndoShown: true});
     }
   }
@@ -44,18 +51,19 @@ export default withStyles(
   }
 
   handleUndo = () => {
-    Decks.undoRemoveDeck();
+    const {decks} = this.props;
+    decks.undoRemoveDeck();
     this.setState({isUndoShown: false});
   }
 
   render() {
-    const {classes} = this.props;
+    const {classes, decks} = this.props;
     const {isUndoShown} = this.state;
 
     return (
       <div>
         <Typography variant='title'>Your Decks</Typography>
-        {Decks.getDecksList()
+        {decks.getDecksList()
           .map(deck => (
             <Card className={classes.card}>
               <CardContent>

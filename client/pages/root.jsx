@@ -11,41 +11,51 @@ import {Link, Route} from 'react-router-dom';
 
 import Builder from '~/pages/builder';
 import Dashboard from '~/pages/dashboard';
+import {withStore} from '~/libs/store';
+import {compose} from '~/libs/utils';
 
 const drawerWidth = 240;
 
-export default withStyles(
-  theme => ({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      overflow: 'hidden'
-    },
-    appBar: {
-      [theme.breakpoints.up('md')]: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`
-      }
-    },
-    navIcon: {
-      [theme.breakpoints.up('md')]: {
-        display: 'none'
-      }
-    },
-    drawer: {
-      width: drawerWidth
-    },
-    content: {
-      flexGrow: 1,
-      backgroundColor: theme.palette.background.default,
-      padding: theme.spacing.unit * 3,
-      [theme.breakpoints.up('md')]: {
-        marginLeft: drawerWidth
-      }
-    }
+export default compose(
+  withStore({
+    bins: ['decks']
   }),
-  {withTheme: true}
+  withStyles(
+    theme => ({
+      root: {
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        overflow: 'hidden'
+      },
+      appBar: {
+        [theme.breakpoints.up('md')]: {
+          marginLeft: drawerWidth,
+          width: `calc(100% - ${drawerWidth}px)`
+        }
+      },
+      navIcon: {
+        [theme.breakpoints.up('md')]: {
+          display: 'none'
+        }
+      },
+      drawer: {
+        width: drawerWidth
+      },
+      nestedMenuItem: {
+        paddingLeft: theme.spacing.unit * 4
+      },
+      content: {
+        flexGrow: 1,
+        backgroundColor: theme.palette.background.default,
+        padding: theme.spacing.unit * 3,
+        [theme.breakpoints.up('md')]: {
+          marginLeft: drawerWidth
+        }
+      }
+    }),
+    {withTheme: true}
+  )
 )(class Root extends React.Component {
   constructor(props) {
     super(props);
@@ -104,10 +114,16 @@ export default withStyles(
   }
 
   renderDrawerMenu() {
+    const {classes, decks} = this.props;
     return (
       <React.Fragment>
         <MenuItem component={Link} to='/'>Dashboard</MenuItem>
         <MenuItem component={Link} to='/builder'>Deck Builder</MenuItem>
+        {decks.getDecksList()
+          .map(deck => (
+            <MenuItem className={classes.nestedMenuItem} component={Link} to={`/builder/${deck.name}`}>{deck.name}</MenuItem>
+          ))
+        }
       </React.Fragment>
     );
   }

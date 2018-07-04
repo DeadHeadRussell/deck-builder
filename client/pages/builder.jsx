@@ -11,21 +11,45 @@ import debounce from 'debounce';
 import {List, Map} from 'immutable';
 
 import {ETERNAL_CARDS, ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER} from '~/../shared/models/eternalCards';
-import {Decks} from '~/libs/persistence';
 
 import Board from '~/components/board';
 import CardsList from '~/components/cardsList';
+import {withStore} from '~/libs/store';
 
-export default class Builder extends React.Component {
+export default withStore({
+  bins: ['decks']
+})(class Builder extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.createInitialState(props);
   }
 
   componentDidMount() {
+    this.loadDeck(this.props);
+  }
+
+  componentWillReceiveProps(newProps) {
+    const oldName = this.props.match.params.name || '';
+    const newName = newProps.match.params.name || '';
+    if (oldName != newName) {
+      this.setState(this.createInitialState(newProps), this.loadDeck);
+    }
+  }
+
+  createInitialState(props) {
+    const deckName = props.match.params.name || '';
+    return {
+      exportAnchor: null,
+      loading: true,
+      deckName
+    };
+  }
+
+  loadDeck() {
     ETERNAL_CARDS.then(cards => {
+      const {decks} = this.props;
       const {deckName} = this.state;
-      const deck = Decks.getDeck(deckName);
+      const deck = decks.getDeck(deckName);
 
       const allCards = cards;
       const cardsPool = List(deck && deck.cardsPool)
@@ -42,16 +66,6 @@ export default class Builder extends React.Component {
         mainboard
       });
     });
-  }
-
-  createInitialState(props) {
-    const deckName = props.match.params.name || '';
-
-    return {
-      exportAnchor: null,
-      loading: true,
-      deckName
-    };
   }
 
   openExportMenu = event => {
@@ -74,9 +88,9 @@ export default class Builder extends React.Component {
     this.setState({exportAnchor: null});
   }
 
-  saveDeck = debounce(() => {
-    const {deckName, allCards, cardsPool, mainboard} = this.state;
-    Decks.setDeck(deckName, {
+  asDeck() {
+    const {deckName, mainboard, cardsPool} = this.state;
+    return {
       name: deckName,
       cards: mainboard
         .map(card => card.name)
@@ -84,7 +98,13 @@ export default class Builder extends React.Component {
       cardsPool: cardsPool
         .map(card => card.name)
         .toArray()
-    });
+    };
+  }
+
+  saveDeck = debounce(() => {
+    const {decks} = this.props;
+    const {deckName, cardsPool, mainboard} = this.state;
+    decks.setDeck(this.asDeck());
   }, 500);
 
   onDeckNameChange = event => {
@@ -92,6 +112,7 @@ export default class Builder extends React.Component {
   }
 
   updateDeckName = event => {
+    const {decks} = this.props;
     const {deckName} = this.state;
 
     this.setState({deckNameError: null});
@@ -101,11 +122,11 @@ export default class Builder extends React.Component {
       return;
     }
 
-    const deckCollision = Decks.getDeck(newDeckName);
+    const deckCollision = decks.getDeck(newDeckName);
     if (deckCollision) {
       this.setState({deckNameError: `You already have a deck named "${newDeckName}"`});
     } else {
-      Decks.removeDeck(deckName);
+      decks.removeDeck(this.asDeck());
       this.setState({deckName: newDeckName}, this.saveDeck);
     }
   }
@@ -235,5 +256,5 @@ export default class Builder extends React.Component {
         </Grid>
       );
   }
-}
+});
 
