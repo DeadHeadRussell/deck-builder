@@ -25,13 +25,19 @@ export default class Builder extends React.Component {
     ETERNAL_CARDS.then(cards => {
       const {deckName} = this.state;
       const deck = Decks.getDeck(deckName);
+
+      const allCards = cards;
+      const cardsPool = List(deck && deck.cardsPool)
+        .map(cardName => cards.find(card => card.name == cardName));
+
       const mainboard = List(deck && deck.cards)
         .map(cardName => cards.find(card => card.name == cardName))
 
       this.setState({
         loading: false,
         deckName,
-        allCards: cards,
+        allCards,
+        cardsPool,
         mainboard
       });
     });
@@ -68,10 +74,13 @@ export default class Builder extends React.Component {
   }
 
   saveDeck = debounce(() => {
-    const {deckName, mainboard} = this.state;
+    const {deckName, allCards, cardsPool, mainboard} = this.state;
     Decks.setDeck(deckName, {
       name: deckName,
       cards: mainboard
+        .map(card => card.name)
+        .toArray(),
+      cardsPool: cardsPool
         .map(card => card.name)
         .toArray()
     });
@@ -100,7 +109,13 @@ export default class Builder extends React.Component {
     }
   }
 
-  updateCards = cards => {
+  updateCardsPool = cardsPool => {
+    this.setState({cardsPool: cardsPool
+      .sort((a, b) => a.compare(b))
+    });
+  }
+
+  updateMainboardCards = cards => {
     this.setState({mainboard: cards
       .sort((a, b) => a.compare(b))
     }, this.saveDeck);
@@ -115,22 +130,27 @@ export default class Builder extends React.Component {
   }
 
   addCard = card => {
-    const {mainboard} = this.state;
+    const {cardsPool, mainboard} = this.state;
     this.setState({
       mainboard: mainboard.push(card)
-        .sort((a, b) => a.compare(b))
+        .sort((a, b) => a.compare(b)),
+      cardsPool: cardsPool.remove(cardsPool.findIndex(c => c == card))
     }, this.saveDeck);
   }
 
   removeCard = card => {
-    const {mainboard} = this.state;
+    const {cardsPool, mainboard} = this.state;
     this.setState({
-      mainboard: mainboard.remove(mainboard.findIndex(c => c == card))
+      mainboard: mainboard.remove(mainboard.findIndex(c => c == card)),
+      cardsPool: cardsPool.isEmpty()
+        ? cardsPool
+        : cardsPool.push(card)
+          .sort((a, b) => a.compare(b))
     }, this.saveDeck);
   }
 
   render() {
-    const {exportAnchor, deckName, deckNameError, loading, allCards, mainboard} = this.state;
+    const {exportAnchor, deckName, deckNameError, loading, allCards, cardsPool, mainboard} = this.state;
 
     return loading
       ? (
@@ -145,7 +165,7 @@ export default class Builder extends React.Component {
             <Typography variant='headline'>Deck Editor</Typography>
           </Grid>
 
-          <Grid item>
+          <Grid item xs={12}>
             <TextField
               label='Deck Name'
               defaultValue={deckName}
@@ -153,8 +173,6 @@ export default class Builder extends React.Component {
               error={!!deckNameError}
               helperText={deckNameError}
             />
-          </Grid>
-          <Grid>
             <Button
               aria-owns={exportAnchor ? 'export-menu' : null}
               aria-haspopup='true'
@@ -173,12 +191,21 @@ export default class Builder extends React.Component {
             </Menu>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item>
             <CardsList
+              label='Card Pool'
+              allCards={allCards}
+              cards={cardsPool}
+              onChange={this.updateCardsPool}
+            />
+          </Grid>
+          <Grid item>
+            <CardsList
+              label='Deck List'
               innerRef={cardsList => this.cardsList = cardsList}
               allCards={allCards}
               cards={mainboard}
-              onChange={this.updateCards}
+              onChange={this.updateMainboardCards}
             />
           </Grid>
 
@@ -196,7 +223,7 @@ export default class Builder extends React.Component {
           <Grid item xs={12}>
             <Board
               name='All Cards'
-              cards={allCards}
+              cards={cardsPool.isEmpty() ? allCards : cardsPool}
               groupings={ETERNAL_GROUPS}
               sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
               cardActions={['Add to Deck']}

@@ -41,7 +41,7 @@ export default withStyles(
   parseCard(cardText) {
     const {allCards} = this.props;
 
-    const regex = /^(\d+) ([^(]+) \((Set(\d+) #(\d+))?\)$/;
+    const regex = /^(\d+) ([^(]+) \((Set(\d+) #(\d*))?\)$/;
     const matches = cardText.match(regex);
     if (matches) {
       const count = parseInt(matches[1], 10);
@@ -53,7 +53,6 @@ export default withStyles(
           .map(() => card);
       }
     }
-    console.error(`Could not parse card text "${cardText}"`);
     return cardText;
   }
 
@@ -76,17 +75,17 @@ export default withStyles(
   }
 
   render() {
-    const {onChange, classes} = this.props;
+    const {label, onChange, classes} = this.props;
     const {text, textError} = this.state;
     return (
       <TextField
-        label='Cards List'
+        label={label || 'Cards List'}
         className={classes.textField}
         multiline={true}
         error={!!textError}
         helperText={textError}
         rows={10}
-        rowsMax={60}
+        rowsMax={20}
         value={text}
         readOnly={!!onChange}
         onChange={this.onChange}

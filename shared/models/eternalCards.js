@@ -169,7 +169,8 @@ const ETERNAL_DEFAULT_SORT_ORDER = OrderedMap({
     return a.localeCompare(b);
   },
   'Name': (a, b) => a.localeCompare(b),
-  'Set': (a, b) => SETS_ORDER.indexOf(a) - SETS_ORDER.indexOf(b)
+  'Set': (a, b) => SETS_ORDER.indexOf(a) - SETS_ORDER.indexOf(b),
+  'Card Type': (a, b) => a.localeCompare(b)
 });
 
 const ETERNAL_PACK_SORT_ORDER = OrderedMap({
