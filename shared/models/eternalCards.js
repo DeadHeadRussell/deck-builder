@@ -209,7 +209,7 @@ const ETERNAL_CARDS = rawEternalCardData
 export {ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, ETERNAL_PACK_SORT_ORDER, ETERNAL_CARDS};
 
 function parseUrl(name) {
-  return `/static/eternal/${name}.png`;
+  return `static/eternal/${name}.png`;
 }
 
 function parseSet(setNumber) {
