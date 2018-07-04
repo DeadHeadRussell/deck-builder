@@ -84,11 +84,16 @@ export default class Builder extends React.Component {
   updateDeckName = event => {
     const {deckName} = this.state;
 
+    this.setState({deckNameError: null});
+
     const newDeckName = event.target.value;
+    if (newDeckName == deckName) {
+      return;
+    }
+
     const deckCollision = Decks.getDeck(newDeckName);
     if (deckCollision) {
-      // error 
-      console.error(`Deck "${newDeckName}" already exists`, deckCollision);
+      this.setState({deckNameError: `You already have a deck named "${newDeckName}"`});
     } else {
       Decks.removeDeck(deckName);
       this.setState({deckName: newDeckName}, this.saveDeck);
@@ -125,7 +130,7 @@ export default class Builder extends React.Component {
   }
 
   render() {
-    const {exportAnchor, deckName, loading, allCards, mainboard} = this.state;
+    const {exportAnchor, deckName, deckNameError, loading, allCards, mainboard} = this.state;
 
     return loading
       ? (
@@ -143,9 +148,10 @@ export default class Builder extends React.Component {
           <Grid item>
             <TextField
               label='Deck Name'
-              value={deckName}
-              onChange={this.onDeckNameChange}
+              defaultValue={deckName}
               onBlur={this.updateDeckName}
+              error={!!deckNameError}
+              helperText={deckNameError}
             />
           </Grid>
           <Grid>

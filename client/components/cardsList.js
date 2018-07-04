@@ -54,31 +54,37 @@ export default withStyles(
       }
     }
     console.error(`Could not parse card text "${cardText}"`);
-    return null;
+    return cardText;
   }
 
   onChange = event => {
     const {onChange} = this.props;
     const text = event.target.value;
-    this.setState({text});
+    this.setState({text, textError: null});
 
     const cards = List(text.split('\n'))
       .filter(cardText => cardText)
       .map(cardText => this.parseCard(cardText));
-    const errors = cards.filter(card => !card);
+    const errors = cards.filter(card => typeof card == 'string');
     if (errors.isEmpty()) {
       onChange(cards.flatten());
+    } else {
+      this.setState({
+        textError: `Could not parse cards: ${errors.join(', ')}`
+      });
     }
   }
 
   render() {
     const {onChange, classes} = this.props;
-    const {text} = this.state;
+    const {text, textError} = this.state;
     return (
       <TextField
         label='Cards List'
         className={classes.textField}
         multiline={true}
+        error={!!textError}
+        helperText={textError}
         rows={10}
         rowsMax={60}
         value={text}
