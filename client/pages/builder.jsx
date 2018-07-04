@@ -113,7 +113,7 @@ export default class Builder extends React.Component {
   updateCardsPool = cardsPool => {
     this.setState({cardsPool: cardsPool
       .sort((a, b) => a.compare(b))
-    });
+    }, this.saveDeck);
   }
 
   updateMainboardCards = cards => {
@@ -156,16 +156,12 @@ export default class Builder extends React.Component {
     return loading
       ? (
         <React.Fragment>
-          <Typography variant='subtitle'>{deckName}</Typography>
+          <Typography variant='title'>{deckName}</Typography>
           <CircularProgress />
         </React.Fragment>
       )
       : (
         <Grid container spacing={24}>
-          <Grid item xs={12}>
-            <Typography variant='headline'>Deck Editor</Typography>
-          </Grid>
-
           <Grid item xs={12}>
             <TextField
               label='Deck Name'
