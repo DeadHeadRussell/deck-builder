@@ -1,3 +1,8 @@
+import red from '@material-ui/core/colors/red';
+import purple from '@material-ui/core/colors/purple';
+import indigo from '@material-ui/core/colors/indigo';
+import green from '@material-ui/core/colors/green';
+import yellow from '@material-ui/core/colors/yellow';
 import {List, Map, OrderedMap, Set} from 'immutable';
 
 import Card from './card';
@@ -187,7 +192,7 @@ const ETERNAL_PACK_SORT_ORDER = OrderedMap({
 
 const ETERNAL_CARDS = rawEternalCardData
   .then(rawEternalCardData => List(rawEternalCardData)
-    .map((card, index) => new Card(index, card['Name'], parseUrl(card['Name']), {
+    .map((card, index) => new Card(index, card['Name'], parseUrl(card['Name']), !card['DeckBuildable'], {
       'Set': parseSet(card['SetNumber']),
       'Set Number': card['SetNumber'],
       'Eternal ID': card['EternalID'],
@@ -207,6 +212,50 @@ const ETERNAL_CARDS = rawEternalCardData
   );
 
 export {ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, ETERNAL_PACK_SORT_ORDER, ETERNAL_CARDS};
+
+export function generateEternalStats(cards) {
+  const minCurve = 0;
+  const curveGroups = cards
+    .filterNot(card => card.getValue('Type') == 'Power')
+    .groupBy(card => card.getValue('Cost - Power'));
+  const maxCurve = curveGroups.keySeq().max();
+
+  const colourGroups = cards
+    .filterNot(card => card.getValue('Type') == 'Power')
+    .map(card => Set(card.getValue('Cost - Influence').replace(/{|}/g, '').split('')))
+    .flatten()
+    .groupBy(colour => colour);
+  const colourColours = Map({
+    'F': red['700'],
+    'S': purple['700'],
+    'P': indigo['700'],
+    'J': green['700'],
+    'T': yellow['700']
+  });
+
+  const typeGroups = cards.groupBy(card => card.getValue('Type'));
+
+  return [{
+    title: 'Power Curve',
+    labels: List()
+      .set(maxCurve + 1, 0)
+      .map((_, index) => `${index}`)
+      .toArray(),
+    values: List()
+      .set(maxCurve + 1, 0)
+      .map((_, index) => curveGroups.get(index, List()).size)
+      .toArray()
+  }, {
+    title: 'By Colour',
+    labels: colourGroups.keySeq().toArray(),
+    values: colourGroups.map(colours => colours.size).toArray(),
+    colours: colourGroups.map(colours => colourColours.get(colours.first())).toArray()
+  }, {
+    title: 'By Type',
+    labels: typeGroups.keySeq().toArray(),
+    values: typeGroups.map(cards => cards.size).toArray()
+  }]
+}
 
 function parseUrl(name) {
   return `static/eternal/${name}.png`;

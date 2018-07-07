@@ -1,8 +1,9 @@
 export default class Card {
-  constructor(id, name, imageUrl, data, defaultSortOrder) {
+  constructor(id, name, imageUrl, token, data, defaultSortOrder) {
     this.id = id;
     this.name = name;
     this.imageUrl = imageUrl;
+    this.token = token;
     this.data = data;
     this.dataString = Object.values(data).join(' ');
     this.defaultSortOrder = defaultSortOrder;

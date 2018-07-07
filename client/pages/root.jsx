@@ -121,7 +121,7 @@ export default compose(
         <MenuItem component={Link} to='/builder'>Deck Builder</MenuItem>
         {decks.getDecksList()
           .map(deck => (
-            <MenuItem className={classes.nestedMenuItem} component={Link} to={`/builder/${deck.name}`}>{deck.name}</MenuItem>
+            <MenuItem key={deck.name} className={classes.nestedMenuItem} component={Link} to={`/builder/${deck.name}`}>{deck.name}</MenuItem>
           ))
         }
       </React.Fragment>

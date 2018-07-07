@@ -7,7 +7,7 @@
     "build": "webpack",
     "deploy": "gh-pages-deploy",
     "clean-source": "rm -rf client shared package.json package-lock.json webpack.config.js .babelrc",
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --mode=development",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "gh-pages-deploy": {
@@ -26,6 +26,7 @@
   "dependencies": {
     "@material-ui/core": "^1.3.0",
     "@material-ui/icons": "^1.1.0",
+    "chart.js": "^2.7.2",
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.0.8",
     "debounce": "^1.1.0",
@@ -33,6 +34,7 @@
     "immutable": "^3.8.2",
     "nes": "^7.0.2",
     "react": "^16.4.1",
+    "react-chartjs-2": "^2.7.2",
     "react-dom": "^16.4.1",
     "react-proptypes": "^1.0.0",
     "react-redux": "^5.0.7",

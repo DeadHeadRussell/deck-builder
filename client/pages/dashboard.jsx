@@ -65,7 +65,7 @@ export default compose(
         <Typography variant='title'>Your Decks</Typography>
         {decks.getDecksList()
           .map(deck => (
-            <Card className={classes.card}>
+            <Card key={deck.name} className={classes.card}>
               <CardContent>
                 <Typography variant='body1'>
                   {deck.name || '(In progress...)'}
@@ -79,7 +79,7 @@ export default compose(
           ))
           .update(decks => decks.isEmpty()
             ? (
-              <Card className={classes.card}>
+              <Card key='no-decks' className={classes.card}>
                 <CardContent>
                   <Typography variant='body1'>You have no decks</Typography>
                 </CardContent>

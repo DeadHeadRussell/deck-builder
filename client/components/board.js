@@ -105,7 +105,7 @@ export default withStyles(
     this.setState({view: event.target.value});
   }
 
-  updateCompact = event => {
+  updateDisplay = event => {
     this.setState({display: event.target.value});
   }
 
@@ -125,7 +125,7 @@ export default withStyles(
           cards={cards}
           view={view}
           display={display}
-          defaultDisplay={cardGroups.size == 1
+          defaultVisibility={(cardGroups.size == 1 && cards.size < 25)
             ? true
             : false
           }
@@ -160,10 +160,10 @@ export default withStyles(
               id: 'grouping-sort'
             }}
           >
-            {[(<MenuItem value='None'>None</MenuItem>)]
+            {[(<MenuItem key='none' value=''>None</MenuItem>)]
               .concat(groupings
                 .map(grouping => (
-                  <MenuItem value={grouping}>{grouping}</MenuItem>
+                  <MenuItem key={grouping} value={grouping}>{grouping}</MenuItem>
                 ))
               )
             }
@@ -189,7 +189,7 @@ export default withStyles(
           <FormLabel htmlFor='display'>Display</FormLabel>
           <Select
             value={display}
-            onChange={this.updateCompact}
+            onChange={this.updateDisplay}
             inputProps={{
               name: 'display',
               id: 'display'

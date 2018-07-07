@@ -1,24 +1,32 @@
+import {withTheme} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import copy from 'copy-to-clipboard';
 import debounce from 'debounce';
 import {List, Map} from 'immutable';
+import {Bar} from 'react-chartjs-2';
 
-import {ETERNAL_CARDS, ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER} from '~/../shared/models/eternalCards';
+import {ETERNAL_CARDS, ETERNAL_GROUPS, ETERNAL_DEFAULT_SORT_ORDER, generateEternalStats} from '~/../shared/models/eternalCards';
 
 import Board from '~/components/board';
 import CardsList from '~/components/cardsList';
 import {withStore} from '~/libs/store';
+import {compose} from '~/libs/utils';
 
-export default withStore({
-  bins: ['decks']
-})(class Builder extends React.Component {
+export default compose(
+  withStore({
+    bins: ['decks']
+  }),
+  withTheme()
+)(class Builder extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.createInitialState(props);
@@ -39,6 +47,7 @@ export default withStore({
   createInitialState(props) {
     const deckName = props.match.params.name || '';
     return {
+      currentTab: 'cards',
       exportAnchor: null,
       loading: true,
       deckName
@@ -51,12 +60,11 @@ export default withStore({
       const {deckName} = this.state;
       const deck = decks.getDeck(deckName);
 
-      const allCards = cards;
+      const allCards = cards.filterNot(card => card.token);
       const cardsPool = List(deck && deck.cardsPool)
-        .map(cardName => cards.find(card => card.name == cardName));
-
+        .map(cardName => allCards.find(card => card.name == cardName));
       const mainboard = List(deck && deck.cards)
-        .map(cardName => cards.find(card => card.name == cardName))
+        .map(cardName => allCards.find(card => card.name == cardName))
 
       this.setState({
         loading: false,
@@ -86,6 +94,10 @@ export default withStore({
 
   closeExportMenu = () => {
     this.setState({exportAnchor: null});
+  }
+
+  updateTab = (event, newTab) => {
+    this.setState({currentTab: newTab});
   }
 
   asDeck() {
@@ -172,7 +184,8 @@ export default withStore({
   }
 
   render() {
-    const {exportAnchor, deckName, deckNameError, loading, allCards, cardsPool, mainboard} = this.state;
+    const {classes, theme} = this.props;
+    const {currentTab, exportAnchor, deckName, deckNameError, loading, allCards, cardsPool, mainboard} = this.state;
 
     return loading
       ? (
@@ -182,7 +195,7 @@ export default withStore({
         </React.Fragment>
       )
       : (
-        <Grid container spacing={24}>
+        <Grid container spacing={40}>
           <Grid item xs={12}>
             <TextField
               label='Deck Name'
@@ -209,50 +222,105 @@ export default withStore({
             </Menu>
           </Grid>
 
-          <Grid item>
-            <CardsList
-              label='Card Pool'
-              helperText='Use this if you are working with a limited set of cards (eg, a draft or sealed card pool).'
-              allCards={allCards}
-              cards={cardsPool}
-              onChange={this.updateCardsPool}
-            />
-          </Grid>
-          <Grid item>
-            <CardsList
-              label='Deck List'
-              innerRef={cardsList => this.cardsList = cardsList}
-              allCards={allCards}
-              cards={mainboard}
-              onChange={this.updateMainboardCards}
-            />
+          <Grid item xs={12}>
+            <Tabs value={currentTab} fullWidth onChange={this.updateTab}>
+              <Tab value='cards' label='Cards' />
+              <Tab value='lists' label='Lists' />
+              <Tab value='stats' label='Stats' />
+            </Tabs>
           </Grid>
 
-          <Grid item xs={12}>
-            <Divider />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Board
-              name='Mainboard'
-              cards={mainboard}
-              defaultGrouping='Type'
-              groupings={ETERNAL_GROUPS}
-              sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-              cardActions={['Remove Card', 'Add Card']}
-              onCardClick={this.handleCardAction}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Board
-              name='All Cards'
-              cards={cardsPool.isEmpty() ? allCards : cardsPool}
-              groupings={ETERNAL_GROUPS}
-              sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-              cardActions={['Add to Deck']}
-              onCardClick={this.handleCardAction}
-            />
-          </Grid>
+          {currentTab == 'cards'
+            ? (
+              <React.Fragment>
+                <Grid item xs={12}>
+                  <Board
+                    name='Mainboard'
+                    cards={mainboard}
+                    defaultGrouping='Type'
+                    groupings={ETERNAL_GROUPS}
+                    sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+                    cardActions={['Remove Card', 'Add Card']}
+                    onCardClick={this.handleCardAction}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Board
+                    name='All Cards'
+                    cards={cardsPool.isEmpty() ? allCards : cardsPool}
+                    groupings={ETERNAL_GROUPS}
+                    sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+                    cardActions={['Add to Deck']}
+                    onCardClick={this.handleCardAction}
+                  />
+                </Grid>
+              </React.Fragment>
+            )
+          : currentTab == 'lists'
+            ? (
+              <React.Fragment>
+                <Grid item>
+                  <CardsList
+                    label='Card Pool'
+                    helperText='Use this if you are working with a limited set of cards (eg, a draft or sealed card pool).'
+                    allCards={allCards}
+                    cards={cardsPool}
+                    onChange={this.updateCardsPool}
+                  />
+                </Grid>
+                <Grid item>
+                  <CardsList
+                    label='Deck List'
+                    innerRef={cardsList => this.cardsList = cardsList}
+                    allCards={allCards}
+                    cards={mainboard}
+                    onChange={this.updateMainboardCards}
+                  />
+                </Grid>
+              </React.Fragment>
+            )
+          : currentTab == 'stats'
+            ? (
+              <React.Fragment>
+                {generateEternalStats(mainboard)
+                  .map(stats => (
+                    <Grid item xs={12} md={6}>
+                      <Bar
+                        data={{
+                          labels: stats.labels,
+                          datasets: [{
+                            label: stats.title,
+                            data: stats.values,
+                            backgroundColor: stats.colours || theme.palette.secondary.dark
+                          }]
+                        }}
+                        options={{
+                          scales: {
+                            yAxes: [{
+                              ticks: {
+                                beginAtZero: true
+                              }
+                            }]
+                          }
+                        }}
+                      />
+                    </Grid>
+                  ))
+                }
+                <Grid item xs={12}>
+                  <Board
+                    name='Mainboard'
+                    cards={mainboard}
+                    defaultGrouping='Type'
+                    groupings={ETERNAL_GROUPS}
+                    sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+                    cardActions={['Remove Card', 'Add Card']}
+                    onCardClick={this.handleCardAction}
+                  />
+                </Grid>
+              </React.Fragment>
+            )
+          : null}
         </Grid>
       );
   }
