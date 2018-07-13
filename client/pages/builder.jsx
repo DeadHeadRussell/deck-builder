@@ -64,14 +64,17 @@ export default compose(
       const cardsPool = List(deck && deck.cardsPool)
         .map(cardName => allCards.find(card => card.name == cardName));
       const mainboard = List(deck && deck.cards)
-        .map(cardName => allCards.find(card => card.name == cardName))
+        .map(cardName => allCards.find(card => card.name == cardName));
+      const market = List(deck && deck.market)
+        .map(cardName => allCards.find(card => card.name == cardName));
 
       this.setState({
         loading: false,
         deckName,
         allCards,
         cardsPool,
-        mainboard
+        mainboard,
+        market
       });
     });
   }
@@ -101,10 +104,13 @@ export default compose(
   }
 
   asDeck() {
-    const {deckName, mainboard, cardsPool} = this.state;
+    const {deckName, mainboard, market, cardsPool} = this.state;
     return {
       name: deckName,
       cards: mainboard
+        .map(card => card.name)
+        .toArray(),
+      market: market
         .map(card => card.name)
         .toArray(),
       cardsPool: cardsPool
@@ -115,7 +121,6 @@ export default compose(
 
   saveDeck = debounce(() => {
     const {decks} = this.props;
-    const {deckName, cardsPool, mainboard} = this.state;
     decks.setDeck(this.asDeck());
   }, 500);
 
@@ -155,27 +160,45 @@ export default compose(
     }, this.saveDeck);
   }
 
+  updateMarketCards = cards => {
+    this.setState({market: cards
+      .sort((a, b) => a.compare(b))
+    }, this.saveDeck);
+  }
+
   handleCardAction = (action, card) => {
     switch (action) {
-      case 'Add Card': return this.addCard(card);
-      case 'Remove Card': return this.removeCard(card);
-      case 'Add to Deck': return this.addCard(card);
+      case 'Add Card': return this.addCard(card, 'mainboard');
+      case 'Remove Card': return this.removeCard(card, 'mainboard');
+      case 'Add to Deck': return this.addCard(card, 'mainboard');
+      case 'Add to Market': return this.addCard(card, 'market');
+      case 'Move to Market':
+        this.addCard(card, 'market');
+        this.removeCard(card, 'mainboard');
+        return;
+      case 'Move to Deck':
+        this.addCard(card, 'mainboard');
+        this.removeCard(card, 'market');
+        return;
+      case 'Remove from Market': return this.removeCard(card, 'market');
     }
   }
 
-  addCard = card => {
-    const {cardsPool, mainboard} = this.state;
+  addCard = (card, listName) => {
+    const {cardsPool} = this.state;
+    const list = this.state[listName];
     this.setState({
-      mainboard: mainboard.push(card)
+      [listName]: list.push(card)
         .sort((a, b) => a.compare(b)),
       cardsPool: cardsPool.remove(cardsPool.findIndex(c => c == card))
     }, this.saveDeck);
   }
 
-  removeCard = card => {
-    const {cardsPool, mainboard} = this.state;
+  removeCard = (card, listName) => {
+    const {cardsPool} = this.state;
+    const list = this.state[listName];
     this.setState({
-      mainboard: mainboard.remove(mainboard.findIndex(c => c == card)),
+      [listName]: list.remove(list.findIndex(c => c == card)),
       cardsPool: cardsPool.isEmpty()
         ? cardsPool
         : cardsPool.push(card)
@@ -185,7 +208,7 @@ export default compose(
 
   render() {
     const {classes, theme} = this.props;
-    const {currentTab, exportAnchor, deckName, deckNameError, loading, allCards, cardsPool, mainboard} = this.state;
+    const {currentTab, exportAnchor, deckName, deckNameError, loading, allCards, cardsPool, mainboard, market} = this.state;
 
     return loading
       ? (
@@ -240,7 +263,18 @@ export default compose(
                     defaultGrouping='Type'
                     groupings={ETERNAL_GROUPS}
                     sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-                    cardActions={['Remove Card', 'Add Card']}
+                    cardActions={['Remove Card', 'Add Card', 'Move to Market']}
+                    onCardClick={this.handleCardAction}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Board
+                    name='Market'
+                    cards={market}
+                    defaultGrouping=''
+                    groupings={ETERNAL_GROUPS}
+                    sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
+                    cardActions={['Move to Deck', 'Remove from Market']}
                     onCardClick={this.handleCardAction}
                   />
                 </Grid>
@@ -250,7 +284,7 @@ export default compose(
                     cards={cardsPool.isEmpty() ? allCards : cardsPool}
                     groupings={ETERNAL_GROUPS}
                     sortOrder={ETERNAL_DEFAULT_SORT_ORDER}
-                    cardActions={['Add to Deck']}
+                    cardActions={['Add to Deck', 'Add to Market']}
                     onCardClick={this.handleCardAction}
                   />
                 </Grid>
@@ -275,6 +309,14 @@ export default compose(
                     allCards={allCards}
                     cards={mainboard}
                     onChange={this.updateMainboardCards}
+                  />
+                </Grid>
+                <Grid item>
+                  <CardsList
+                    label='Market'
+                    allCards={allCards}
+                    cards={market}
+                    onChange={this.updateMarketCards}
                   />
                 </Grid>
               </React.Fragment>
