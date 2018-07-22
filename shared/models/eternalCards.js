@@ -98,7 +98,14 @@ const KEYWORDS = List([
   'Stun',
   'Stunned',
   'Warp',
-  'Kill'
+  'Kill',
+  'Inspire',
+  'Spellcraft',
+  'Berserk',
+  'Tribute',
+  'Market',
+  'Power',
+  'Transform'
 ]);
 
 const SETS = Map()
